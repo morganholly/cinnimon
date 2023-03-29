@@ -54,12 +54,18 @@ type
                 infoOTAModel*: string
             of ckASwitch:
                 infoSPNTStates*: int
+    SpringState* = object
+        rest_length*: float
+        current_length*: float
     GraphConnection* = object
         component*: ref ComponentVariant
         from_pin*: int
         to_pin*: int
+        spring*: ref SpringState
     GraphNode* = object
         connections*: seq[GraphConnection]
+        position*: array[2, int]
+        velocity*: array[2, int]
 
 proc componentConnections* (cv: ComponentVariant): int =
     case cv.kind:
