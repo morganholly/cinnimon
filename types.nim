@@ -1,6 +1,3 @@
-import std/[options]
-
-
 type
     ComponentKind* = enum
         ckPwr,
@@ -21,7 +18,7 @@ type
         ckOTA,
         ckASwitch
     ComponentVariant* = object
-        connections*: seq[int]
+        connections*: seq[ref GraphNode] # each pin stored in order
         values*: seq[float]
         case kind*: ComponentKind:
             of ckPwr:
@@ -59,8 +56,8 @@ type
                 infoSPNTStates*: int
     GraphConnection* = object
         component*: ref ComponentVariant
-        pin*: int
-        other*: ref GraphNode
+        from_pin*: int
+        to_pin*: int
     GraphNode* = object
         connections: seq[GraphConnection]
 
