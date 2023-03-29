@@ -1,3 +1,6 @@
+import std/[options]
+
+
 type
     ComponentKind* = enum
         ckPwr,
@@ -54,6 +57,12 @@ type
                 infoOTAModel*: string
             of ckASwitch:
                 infoSPNTStates*: int
+    GraphConnection* = object
+        component*: ref ComponentVariant
+        pin*: int
+        other*: ref GraphNode
+    GraphNode* = object
+        connections: seq[GraphConnection]
 
 proc componentConnections* (cv: ComponentVariant): int =
     case cv.kind:
