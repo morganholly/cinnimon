@@ -59,7 +59,7 @@ type
         from_pin*: int
         to_pin*: int
     GraphNode* = object
-        connections: seq[GraphConnection]
+        connections*: seq[GraphConnection]
 
 proc componentConnections* (cv: ComponentVariant): int =
     case cv.kind:
