@@ -66,6 +66,9 @@ type
         connections*: seq[GraphConnection]
         position*: array[2, int]
         velocity*: array[2, int]
+    Graph* = object
+        nodes*: seq[GraphNode]
+        connections*: seq[GraphConnection]
 
 proc componentConnections* (cv: ComponentVariant): int =
     case cv.kind:
