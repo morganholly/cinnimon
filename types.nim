@@ -17,8 +17,8 @@ type
         ckOpamp,
         ckOTA,
         ckASwitch
-    ComponentVariant* = object
-        connections*: seq[ref GraphNode] # each pin stored in order
+    ComponentVariant* = ref object
+        connections*: seq[GraphNode] # each pin stored in order
         values*: seq[float]
         case kind*: ComponentKind:
             of ckPwr:
@@ -54,15 +54,15 @@ type
                 infoOTAModel*: string
             of ckASwitch:
                 infoSPNTStates*: int
-    SpringState* = object
+    SpringState* = ref object
         rest_length*: float
         current_length*: float
     GraphConnection* = object
-        component*: ref ComponentVariant
+        component*: ComponentVariant
         from_pin*: int
         to_pin*: int
-        spring*: ref SpringState
-    GraphNode* = object
+        spring*: SpringState
+    GraphNode* = ref object
         connections*: seq[GraphConnection]
         position*: array[2, int]
         velocity*: array[2, int]
