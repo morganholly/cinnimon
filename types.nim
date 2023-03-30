@@ -57,6 +57,8 @@ type
     SpringState* = ref object
         rest_length*: float
         current_length*: float
+        force*: float
+        stiffness*: float
     GraphConnection* = object
         component*: ComponentVariant
         from_pin*: int
