@@ -24,7 +24,11 @@ proc spring_force* (spring: var SpringState, skew: float): SpringState =
     let clamped = min(max((delta * 0.5) + 0.75, 0), 1)
     let clamped_nl = 2 * clamped * clamped
     let phase = lerp(
-        skew * delta,
+        lerp(
+            skew * delta,
+            -skew * delta * delta,
+            pow(e_math, skew * skew - 10)
+        ),
         delta,
         if (delta * 0.5) < -0.25:
             clamped_nl
