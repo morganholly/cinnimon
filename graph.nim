@@ -44,3 +44,28 @@ proc direct_connections* (n1, n2: GraphNode): int =
     for c in n1.connections:
         if c.component.connections[c.to_pin] == n2:
             result += 1
+
+proc distsq (n1, n2: var GraphNode): float =
+    let xdif = n1.position[0] - n2.position[0]
+    let ydif = n1.position[1] - n2.position[1]
+    result = xdif * xdif + ydif * ydif
+
+proc dist (n1, n2: var GraphNode): float =
+    result = sqrt(distsq(n1, n2))
+
+proc node_force* (n1, n2: var GraphNode, strength, spread: float): void =
+    let distsq = distsq(n1, n2)
+    let exp = pow(e_math, spread - 5)
+    let gaussish = exp / (distsq + exp)
+    let invx = (strength * exp) / distsq
+    let force = lerp(
+        -invx,
+        invx,
+        gaussish
+    )
+    let fx = (n1.position[0] - n2.position[0]) * (force * force) / distsq
+    let fy = (n1.position[1] - n2.position[1]) * (force * force) / distsq
+    n1.velocity[0] += fx
+    n1.velocity[1] += fy
+    n2.velocity[0] -= fx
+    n2.velocity[1] -= fy

@@ -66,8 +66,8 @@ type
         spring*: SpringState
     GraphNode* = ref object
         connections*: seq[GraphConnection]
-        position*: array[2, int]
-        velocity*: array[2, int]
+        position*: array[2, float]
+        velocity*: array[2, float]
     Graph* = object
         nodes*: seq[GraphNode]
         connections*: seq[GraphConnection]
