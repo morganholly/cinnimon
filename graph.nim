@@ -38,3 +38,9 @@ proc spring_force* (spring: var SpringState, skew: float): SpringState =
     let scaled_phase = phase * pow(e_math, spring.stiffness - 8) * spring.rest_length
     spring.force = scaled_phase * scaled_phase * toFloat(sgn(-delta))
     result = spring
+
+proc direct_connections* (n1, n2: GraphNode): int =
+    result = 0
+    for c in n1.connections:
+        if c.component.connections[c.to_pin] == n2:
+            result += 1
