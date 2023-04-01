@@ -1,3 +1,5 @@
+import vmath
+
 type
     ComponentKind* = enum
         ckPwr,
@@ -66,8 +68,8 @@ type
         spring*: SpringState
     GraphNode* = ref object
         connections*: seq[GraphConnection]
-        position*: array[2, float]
-        velocity*: array[2, float]
+        position*: Vec2
+        velocity*: Vec2
     Graph* = object
         nodes*: seq[GraphNode]
         connections*: seq[GraphConnection]

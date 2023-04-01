@@ -1,4 +1,5 @@
 import types
+import vmath
 import std/[math]
 
 const e_math = 2.7182818284590452353602874713526624977572470936999595749669676277
@@ -48,9 +49,13 @@ proc spring_force* (spring: var SpringState, skew: float = 2.0): var SpringState
         else:
             1 - clamped_nl
     )
-    let scaled_phase = phase * pow(e_math, spring.stiffness - 8) * spring.rest_length
+    let scaled_phase = phase * pow(e_math, spring.stiffness - 8) # * spring.rest_length
     spring.force = scaled_phase * scaled_phase * toFloat(sgn(-delta))
     result = spring
+
+proc spring_length* (conn: var GraphConnection): var GraphConnection =
+    conn.spring.current_length = dist(conn.component.connections[conn.to_pin].position, conn.component.connections[conn.from_pin].position)
+    result = conn
 
 proc direct_connections* (n1, n2: GraphNode): int =
     result = 0
@@ -58,48 +63,58 @@ proc direct_connections* (n1, n2: GraphNode): int =
         if c.component.connections[c.to_pin] == n2:
             result += 1
 
-proc distsq (n1, n2: var GraphNode): float =
-    let xdif = n1.position[0] - n2.position[0]
-    let ydif = n1.position[1] - n2.position[1]
-    result = xdif * xdif + ydif * ydif
+proc distsq (n1, n2: GraphNode): float =
+    # let xdif = n1.position.x - n2.position.x
+    # let ydif = n1.position.y - n2.position.y
+    let diff = n1.position - n2.position
+    result = diff.x * diff.x + diff.y * diff.y
 
-proc dist (n1, n2: var GraphNode): float =
+proc dist (n1, n2: GraphNode): float =
     result = sqrt(distsq(n1, n2))
 
+proc dist (node: GraphNode, vec: Vec2): float =
+    let diff = node.position - vec
+    result = diff.x * diff.x + diff.y * diff.y
+
 proc node_force* (n1, n2: var GraphNode, strength, spread: float): void =
-    let distsq = distsq(n1, n2)
+    let dist = dist(n1, n2)
     let exp = pow(e_math, spread - 5)
-    let gaussish = exp / (distsq + exp)
-    let invx = (strength * exp) / distsq
+    let gaussish = exp / (dist + exp)
+    let invx = (strength * exp) / dist
     let force = lerp(
         -invx,
         invx,
         gaussish
     )
-    let fx = (n1.position[0] - n2.position[0]) * (force * force) / distsq
-    let fy = (n1.position[1] - n2.position[1]) * (force * force) / distsq
-    n1.velocity[0] += fx
-    n1.velocity[1] += fy
-    n2.velocity[0] -= fx
-    n2.velocity[1] -= fy
+    # let fx = (n1.position[0] - n2.position[0]) * (force * force) / distsq
+    # let fy = (n1.position[1] - n2.position[1]) * (force * force) / distsq
+    # n1.velocity[0] += fx
+    # n1.velocity[1] += fy
+    # n2.velocity[0] -= fx
+    # n2.velocity[1] -= fy
+    let directed = (n1.position - n2.position) * force / dist
+    n1.velocity += directed
+    n2.velocity -= directed
 
 proc update_springs* (graph: var Graph): var Graph =
     for c in graph.connections.mitems:
+        discard c.spring_length()
         discard spring_force(c.spring)
     result = graph
 
 proc apply_spring_forces_to_velocity* (graph: var Graph): var Graph =
     for n in graph.nodes.mitems:
         for c in n.connections:
-            let distsq = distsq(n, c.component.connections[c.to_pin])
-            let otherpos = c.component.connections[c.to_pin].position
-            let forcesq = c.spring.force * c.spring.force
-            n.velocity[0] += (n.position[0] - otherpos[0]) * (forcesq) / distsq
-            n.velocity[1] += (n.position[1] - otherpos[1]) * (forcesq) / distsq
+            # n.velocity[0] += (n.position[0] - otherpos[0]) * (forcesq) / distsq
+            # n.velocity[1] += (n.position[1] - otherpos[1]) * (forcesq) / distsq
+            n.velocity +=
+                (n.position - c.component.connections[c.to_pin].position) * (c.spring.force) / (dist(n, c.component.connections[c.to_pin]) + 0.00001)
     result = graph
 
 proc apply_velocities* (graph: var Graph, dt: float): var Graph =
     for n in graph.nodes.mitems:
-        n.position[0] += n.velocity[0] * dt
-        n.position[1] += n.velocity[1] * dt
+        # n.position[0] += n.velocity[0] * dt
+        # n.position[1] += n.velocity[1] * dt
+        n.position += n.velocity * dt
+        n.velocity = vec2(0, 0)
     result = graph
