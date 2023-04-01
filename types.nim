@@ -107,6 +107,41 @@ proc componentConnections* (cv: ComponentVariant): int =
         of ckASwitch:
             return 2 + cv.infoSPNTStates
 
+proc componentConnections* (kind: ComponentKind, states: int = 1): int =
+    case kind:
+        of ckPwr:
+            return 1
+        of ckConnInput:
+            return 1
+        of ckConnOutput:
+            return 1
+        of ckConnPot:
+            return 3
+        of ckConnSwitch:
+            return 1 + states
+        of ckRes:
+            return 2
+        of ckCap:
+            return 2
+        of ckCapP:
+            return 2
+        of ckInductor:
+            return 2
+        of ckDiode:
+            return 2
+        of ckDiodeZ:
+            return 2
+        # of ckTransistorN:
+        #     return 3
+        # of ckTransistorP:
+        #     return 3
+        of ckOpamp:
+            return 3
+        of ckOTA:
+            return 5
+        of ckASwitch:
+            return 2 + states
+
 proc componentValues* (kind: ComponentKind): int =
     case kind:
         of ckPwr:
