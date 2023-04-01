@@ -16,6 +16,19 @@ proc connect* (graph: var Graph, n1, n2: var GraphNode, p1, p2: int, component: 
     graph.connections.add([gc1, gc2])
     result = graph
 
+proc connect* (graph: var Graph, n1, n2: var GraphNode, p1, p2: int, kind: ComponentKind, values: seq[float], spring: float = 1): var Graph =
+    var spring = SpringState(rest_length: spring, current_length: spring, force: 0.0, stiffness: 2.0)
+    var cvconnections = newSeq[GraphNode](componentConnections(kind))
+    cvconnections[p1] = n1
+    cvconnections[p2] = n2
+    var component = ComponentVariant(connections: cvconnections, values: values, kind: kind)
+    var gc1 = GraphConnection(component: component, from_pin: p1, to_pin: p2, spring: spring)
+    var gc2 = GraphConnection(component: component, from_pin: p2, to_pin: p1, spring: spring)
+    n1.connections.add(gc1)
+    n2.connections.add(gc2)
+    graph.connections.add([gc1, gc2])
+    result = graph
+
 proc lerp (x, y, mix: float): float =
     result = mix * y + (1 - mix) * x
 
