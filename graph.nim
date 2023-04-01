@@ -82,3 +82,24 @@ proc node_force* (n1, n2: var GraphNode, strength, spread: float): void =
     n1.velocity[1] += fy
     n2.velocity[0] -= fx
     n2.velocity[1] -= fy
+
+proc update_springs* (graph: var Graph): var Graph =
+    for c in graph.connections.mitems:
+        discard spring_force(c.spring)
+    result = graph
+
+proc apply_spring_forces_to_velocity* (graph: var Graph): var Graph =
+    for n in graph.nodes.mitems:
+        for c in n.connections:
+            let distsq = distsq(n, c.component.connections[c.to_pin])
+            let otherpos = c.component.connections[c.to_pin].position
+            let forcesq = c.spring.force * c.spring.force
+            n.velocity[0] += (n.position[0] - otherpos[0]) * (forcesq) / distsq
+            n.velocity[1] += (n.position[1] - otherpos[1]) * (forcesq) / distsq
+    result = graph
+
+proc apply_velocities* (graph: var Graph, dt: float): var Graph =
+    for n in graph.nodes.mitems:
+        n.position[0] += n.velocity[0] * dt
+        n.position[1] += n.velocity[1] * dt
+    result = graph
