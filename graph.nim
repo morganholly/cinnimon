@@ -33,7 +33,7 @@ proc connect* (graph: var Graph, n1, n2: var GraphNode, p1, p2: int, kind: Compo
 proc lerp (x, y, mix: float): float =
     result = mix * y + (1 - mix) * x
 
-proc spring_force* (spring: var SpringState, skew: float = 1.5): var SpringState =
+proc spring_force_fancy_broken* (spring: var SpringState, skew: float = 1.5): var SpringState =
     let delta = spring.current_length - spring.rest_length
     let clamped = min(max((delta * 0.5) + 0.75, 0), 1)
     let clamped_nl = 2 * clamped * clamped
@@ -49,10 +49,13 @@ proc spring_force* (spring: var SpringState, skew: float = 1.5): var SpringState
         else:
             1 - clamped_nl
     )
-    # let scaled_phase = phase * pow(e_math, spring.stiffness - 8) # * spring.rest_length
-    # spring.force = scaled_phase * scaled_phase * toFloat(sgn(-delta))
-    # result = spring
-    spring.force = -spring.stiffness * phase
+    let scaled_phase = phase * pow(e_math, spring.stiffness - 8) # * spring.rest_length
+    spring.force = scaled_phase * scaled_phase * toFloat(sgn(-delta))
+    result = spring
+
+proc spring_force* (spring: var SpringState, skew: float = 1): var SpringState =
+    let delta = spring.current_length - spring.rest_length
+    spring.force = -((((toFloat(sgn(-delta)) * 0.5 + 0.5) * -skew) + spring.stiffness) * delta)
     result = spring
 
 proc spring_length* (conn: var GraphConnection): var GraphConnection =
@@ -80,7 +83,7 @@ proc dist (node: GraphNode, vec: Vec2): float =
 
 proc node_force* (n1, n2: var GraphNode, strength, spread, force_limit: float): void =
     let dist = dist(n1, n2)
-    if dist == 0:
+    if dist < 0.000001:
         return
     let exp = pow(e_math, spread - 5)
     let gaussish = exp / (dist + exp)
@@ -118,7 +121,7 @@ proc apply_spring_forces_to_velocity* (graph: var Graph): var Graph =
 proc apply_node_forces* (graph: var Graph): var Graph =
     for i in 0..<len(graph.nodes):
         for j in i..<len(graph.nodes):
-            node_force(graph.nodes[i], graph.nodes[j], 10, 10, 5)
+            node_force(graph.nodes[i], graph.nodes[j], 5, 10, 5)
     result = graph
 
 proc apply_velocities* (graph: var Graph, dt: float): void = # seq[array[2, Vec2]] =
